@@ -1,10 +1,7 @@
-// Puertos: lo que el dominio necesita del exterior, en su propio vocabulario.
-//
-// - `...DAO`  → acceso a datos: quien sepa guardar y recuperar entidades.
-// - `...DTO`  → estructura de datos que cruza una frontera.
-// - Sin sufijo → contratos de comportamiento, que no son ni datos ni persistencia.
 
 import type { Rol, Usuario, UsuarioNuevo } from '../modelo/Usuario'
+import type { Tanque, TanqueNuevo } from '../modelo/Tanque'
+import type { Partida, PartidaNueva } from '../modelo/Partida'
 
 export interface UsuarioDAO {
   guardar(usuario: UsuarioNuevo): Promise<Usuario>
@@ -26,4 +23,15 @@ export interface CredencialDTO {
 export interface ServicioTokens {
   emitir(credencial: CredencialDTO): string
   verificar(token: string): CredencialDTO | null
+}
+
+export interface TanqueDAO {
+  guardar(tanque: TanqueNuevo): Promise<Tanque>
+  porId(id: string): Promise<Tanque | null>
+  listarPorPropietario(propietarioId: string): Promise<Tanque[]>
+}
+
+export interface PartidaDAO {
+  guardar(partida: PartidaNueva): Promise<Partida>
+  listarPorJugador(jugadorId: string): Promise<Partida[]>
 }

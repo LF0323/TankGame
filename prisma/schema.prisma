@@ -22,4 +22,45 @@ model Usuario {
   rol       Rol      @default(SOLICITANTE)
   activo    Boolean  @default(true)
   creadoEn  DateTime @default(now())
+
+  tanques  Tanque[]
+  partidas Partida[]
+}
+
+enum TipoTanque {
+  LIGERO
+  MEDIO
+  PESADO
+}
+
+model Tanque {
+  id            String     @id @default(uuid())
+  nombre        String
+  tipo          TipoTanque @default(MEDIO)
+  vida          Int        @default(100)
+  dano          Int        @default(10)
+  velocidad     Int        @default(5)
+
+  propietarioId String
+  propietario   Usuario    @relation(fields: [propietarioId], references: [id])
+
+  creadoEn      DateTime   @default(now())
+}
+
+enum ResultadoPartida {
+  VICTORIA
+  DERROTA
+  EMPATE
+}
+
+model Partida {
+  id               String           @id @default(uuid())
+  resultado        ResultadoPartida
+  puntaje          Int              @default(0)
+  duracionSegundos Int
+
+  jugadorId        String
+  jugador          Usuario          @relation(fields: [jugadorId], references: [id])
+
+  jugadaEn         DateTime         @default(now())
 }
