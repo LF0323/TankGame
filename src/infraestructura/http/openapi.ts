@@ -80,6 +80,13 @@ export const openapi = {
       '- **Gestión de Tanques**: Creación y asignación de atributos según tipo de vehículo (`POST /api/tanques`) y consulta por propietario (`GET /api/tanques`).',
       '- **Registro de Partidas**: Persistencia de victorias/derrotas/empates, puntajes y duración (`POST /api/partidas`) e historial del jugador (`GET /api/partidas`).',
       '',
+      '### Requisitos Funcionales - Partida Multijugador (ACT-008):',
+      '- **RF-M01 (Creación de Sala Multijugador):** Un usuario autenticado puede crear una sala de partida en espera, asignándole un código o identificador único.',
+      '- **RF-M02 (Unirse a una Partida):** Cualquier jugador autenticado puede unirse a una sala en espera mediante su identificador mientras la sala no haya iniciado.',
+      '- **RF-M03 (Capacidad de Jugadores):** Una sala multijugador requiere un **mínimo de 2 jugadores** para iniciar la partida y permite un **máximo de 4 jugadores** por sala.',
+      '- **RF-M04 (Validación de Cupo):** Si la sala alcanza los 4 jugadores, no se permitirán nuevos ingresos (retornando un error de capacidad llena). Si hay menos de 2 jugadores al intentar iniciar, se bloquea el inicio.',
+      '- **RF-M05 (Asignación de Tanques):** Cada jugador que se une a la partida multijugador debe seleccionar o tener asignado un tanque previamente registrado.',
+      '',
       '**Cómo probar desde aquí**: registra un usuario en `POST /api/auth/registro`, copia el `id` de la',
       'respuesta, y úsalo como `propietarioId` / `jugadorId` en los endpoints de Tanques y Partidas.',
       '',
@@ -88,13 +95,12 @@ export const openapi = {
     license: { name: 'MIT' },
   },
   servers: [{ url: '/api', description: 'Servidor actual' }],
-  // Por defecto las rutas son públicas; solo las que declaran `security` exigen token.
   security: [],
   tags: [
     { name: 'Salud', description: 'Verificación de que el servicio responde.' },
     { name: 'Autenticación', description: 'Registro de usuarios, inicio de sesión y consulta del perfil propio.' },
     { name: 'Tanques', description: 'Tanques que posee cada jugador.' },
-    { name: 'Partidas', description: 'Registro de partidas jugadas.' },
+    { name: 'Partidas', description: 'Registro de partidas e historial (Incluye reglas multijugador ACT-008).' },
   ],
   paths: {
     '/salud': {
