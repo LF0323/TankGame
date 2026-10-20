@@ -78,6 +78,12 @@ export const openapi = {
       'las entidades propias del proyecto: **Tanque** (el vehículo de un jugador) y **Partida** (el',
       'registro de una partida jugada). Ambas dependen de un usuario existente.',
       '',
+      '### Requisitos No Funcionales (ACT-015):',
+      '- **Seguridad Básica (RNF-SEG):** Autenticación mediante tokens JWT (HS256, vigencia 8 h), cifrado obligatorio de contraseñas con bcrypt y aislamiento de credenciales en variables de entorno.',
+      '- **Mantenibilidad (RNF-MAN):** Código tipado con TypeScript bajo una arquitectura por capas (rutas, controladores, servicios y repositorios) adherida a principios SOLID y DRY.',
+      '- **Usabilidad (RNF-USA):** Estándar RESTful completo, manejo de respuestas de error estandarizadas (`ErrorDTO`) e interfaz navegable en Swagger UI.',
+      '- **Rendimiento Esperado (RNF-REN):** Latencia de respuesta < 200 ms para consultas simples y < 500 ms para transacciones, con soporte de salas de 2 a 4 jugadores.',
+      '',
       '**Cómo probar desde aquí**: registra un usuario en `POST /api/auth/registro`, copia el `id` de la',
       'respuesta, y úsalo como `propietarioId` / `jugadorId` en los endpoints de Tanques y Partidas.',
       '',
@@ -86,7 +92,6 @@ export const openapi = {
     license: { name: 'MIT' },
   },
   servers: [{ url: '/api', description: 'Servidor actual' }],
-  // Por defecto las rutas son públicas; solo las que declaran `security` exigen token.
   security: [],
   tags: [
     { name: 'Salud', description: 'Verificación de que el servicio responde.' },
