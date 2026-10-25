@@ -78,6 +78,11 @@ const respuestaError = (description: string, ejemplo: string) => ({
   content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorDTO' }, example: { error: ejemplo } } },
 })
 
+/** Todas las rutas cuelgan de `/api`: el prefijo se agrega aquí, en un solo punto, para que Swagger lo muestre completo. */
+const PREFIJO_API = '/api'
+const conPrefijoApi = (rutas: object) =>
+  Object.fromEntries(Object.entries(rutas).map(([ruta, definicion]) => [PREFIJO_API + ruta, definicion]))
+
 export const openapi = {
   openapi: '3.0.3',
   info: {
@@ -106,7 +111,7 @@ export const openapi = {
     ].join('\n'),
     license: { name: 'MIT' },
   },
-  servers: [{ url: '/api', description: 'Servidor actual' }],
+  servers: [{ url: '/', description: 'Servidor actual' }],
   security: [],
   tags: [
     { name: 'Salud', description: 'Verificación de que el servicio responde.' },
@@ -115,7 +120,7 @@ export const openapi = {
     { name: 'Tanques', description: 'Tanques que posee cada jugador.' },
     { name: 'Partidas', description: 'Registro de partidas e historial (Incluye reglas multijugador ACT-008).' },
   ],
-  paths: {
+  paths: conPrefijoApi({
     '/salud': {
       get: {
         tags: ['Salud'],
@@ -429,7 +434,7 @@ export const openapi = {
         },
       },
     },
-  },
+  }),
   components: {
     schemas: { UsuarioDTO: usuario, UsuarioPublicoDTO: usuarioPublico, SesionDTO: sesion, TanqueDTO: tanque, PartidaDTO: partida, ErrorDTO: error },
     securitySchemes: {
