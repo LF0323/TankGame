@@ -5,15 +5,28 @@ import {
   SinPermisoParaCambiarEstado,
   UsuarioNoEncontrado,
 } from '../../../aplicacion/casos-uso/CambiarEstadoUsuario'
+import { ConsultarUsuario } from '../../../aplicacion/casos-uso/ConsultarUsuario'
 import { exigirSesion } from './autenticacion'
 
 export interface DependenciasUsuarios {
   cambiarEstadoUsuario: CambiarEstadoUsuario
+  consultarUsuario: ConsultarUsuario
   tokens: ServicioTokens
 }
 
 export function rutasUsuarios(deps: DependenciasUsuarios): Router {
   const rutas = Router()
+
+  rutas.get('/:usuarioId', exigirSesion(deps.tokens), async (req, res, next) => {
+    const usuarioId = req.params['usuarioId']
+    if (typeof usuarioId !== 'string') return void res.status(400).json({ error: 'usuarioId requerido' })
+    try {
+      res.json(await deps.consultarUsuario.ejecutar(usuarioId))
+    } catch (error) {
+      if (error instanceof UsuarioNoEncontrado) return void res.status(404).json({ error: error.message })
+      next(error)
+    }
+  })
 
   rutas.patch('/:usuarioId/estado', exigirSesion(deps.tokens), async (req, res, next) => {
     const usuarioId = req.params['usuarioId']

@@ -17,6 +17,18 @@ const usuario = {
   required: ['id', 'nombre', 'correo', 'rol', 'activo'],
 }
 
+const usuarioPublico = {
+  type: 'object',
+  description: 'Datos de un usuario visibles para cualquier jugador con sesión (`UsuarioPublicoDTO`): sin correo ni clave.',
+  properties: {
+    id: { type: 'string', format: 'uuid', example: 'cd9c06cf-b57f-4e22-bc47-589a074e8c2c' },
+    nombre: { type: 'string', example: 'Ana Agente' },
+    rol: { type: 'string', enum: ROLES, example: 'AGENTE' },
+    activo: { type: 'boolean', example: true },
+  },
+  required: ['id', 'nombre', 'rol', 'activo'],
+}
+
 const sesion = {
   type: 'object',
   description: 'Resultado de un inicio de sesión: el token y el usuario dueño de la sesión.',
@@ -228,6 +240,33 @@ export const openapi = {
       },
     },
 
+    '/usuarios/{usuarioId}': {
+      get: {
+        tags: ['Usuarios'],
+        summary: 'Consultar un usuario por su id',
+        description:
+          'Devuelve los datos públicos del usuario (id, nombre, rol y si está activo), sin correo ni clave. Requiere sesión.',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'usuarioId',
+            in: 'path',
+            required: true,
+            schema: { type: 'string', format: 'uuid' },
+            description: 'Id del usuario que se quiere consultar.',
+          },
+        ],
+        responses: {
+          200: {
+            description: 'Datos públicos del usuario.',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/UsuarioPublicoDTO' } } },
+          },
+          401: respuestaError('Token ausente, mal formado, expirado o con firma inválida.', 'Sesión requerida'),
+          404: respuestaError('El usuario no existe.', 'No existe un usuario con id ...'),
+        },
+      },
+    },
+
     '/usuarios/{usuarioId}/estado': {
       patch: {
         tags: ['Usuarios'],
@@ -392,7 +431,7 @@ export const openapi = {
     },
   },
   components: {
-    schemas: { UsuarioDTO: usuario, SesionDTO: sesion, TanqueDTO: tanque, PartidaDTO: partida, ErrorDTO: error },
+    schemas: { UsuarioDTO: usuario, UsuarioPublicoDTO: usuarioPublico, SesionDTO: sesion, TanqueDTO: tanque, PartidaDTO: partida, ErrorDTO: error },
     securitySchemes: {
       bearerAuth: {
         type: 'http',
