@@ -4,6 +4,7 @@ import { RegistrarUsuario } from './aplicacion/casos-uso/RegistrarUsuario'
 import { IniciarSesion } from './aplicacion/casos-uso/IniciarSesion'
 import { CrearTanque } from './aplicacion/casos-uso/CrearTanque'
 import { ListarTanquesDeJugador } from './aplicacion/casos-uso/ListarTanquesDeJugador'
+import { ObtenerTanquePorId } from './aplicacion/casos-uso/ObtenerTanquePorId' 
 import { RegistrarPartida } from './aplicacion/casos-uso/RegistrarPartida'
 import { ListarPartidasDeJugador } from './aplicacion/casos-uso/ListarPartidasDeJugador'
 import { prisma } from './infraestructura/persistencia/prisma'
@@ -30,6 +31,7 @@ const app = crearServidor({
   iniciarSesion: new IniciarSesion(usuarios, claves, tokens),
   crearTanque: new CrearTanque(tanques, usuarios),
   listarTanquesDeJugador: new ListarTanquesDeJugador(tanques),
+  obtenerTanquePorId: new ObtenerTanquePorId(tanques), 
   registrarPartida: new RegistrarPartida(partidas, usuarios),
   listarPartidasDeJugador: new ListarPartidasDeJugador(partidas),
 })

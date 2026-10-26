@@ -3,6 +3,7 @@ import { aTanqueDTO, esTipoTanque } from '../../../dominio/modelo/Tanque'
 import { CrearTanque, PropietarioNoExiste } from '../../../aplicacion/casos-uso/CrearTanque'
 import type { CrearTanqueDTO } from '../../../aplicacion/casos-uso/CrearTanque'
 import { ListarTanquesDeJugador } from '../../../aplicacion/casos-uso/ListarTanquesDeJugador'
+import { ObtenerTanquePorId, TanqueNoEncontrado } from '../../../aplicacion/casos-uso/ObtenerTanquePorId'
 
 function validarCreacion(cuerpo: unknown): CrearTanqueDTO | string {
   const d = (cuerpo ?? {}) as Record<string, unknown>
@@ -15,6 +16,7 @@ function validarCreacion(cuerpo: unknown): CrearTanqueDTO | string {
 export interface DependenciasTanques {
   crearTanque: CrearTanque
   listarTanquesDeJugador: ListarTanquesDeJugador
+  obtenerTanquePorId: ObtenerTanquePorId
 }
 
 export function rutasTanques(deps: DependenciasTanques): Router {
@@ -38,6 +40,17 @@ export function rutasTanques(deps: DependenciasTanques): Router {
       const tanques = await deps.listarTanquesDeJugador.ejecutar(propietarioId)
       res.json(tanques.map(aTanqueDTO))
     } catch (error) {
+      next(error)
+    }
+  })
+
+  rutas.get('/:tanqueId', async (req, res, next) => {
+    const { tanqueId } = req.params
+    try {
+      const tanque = await deps.obtenerTanquePorId.ejecutar(tanqueId)
+      res.json(aTanqueDTO(tanque))
+    } catch (error) {
+      if (error instanceof TanqueNoEncontrado) return void res.status(404).json({ error: error.message })
       next(error)
     }
   })
