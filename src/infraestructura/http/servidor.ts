@@ -4,6 +4,8 @@ import swaggerUi from 'swagger-ui-express'
 import { openapi } from './openapi'
 import { rutasAutenticacion } from './rutas/autenticacion'
 import type { DependenciasAutenticacion } from './rutas/autenticacion'
+import { rutasUsuarios } from './rutas/usuarios'
+import type { DependenciasUsuarios } from './rutas/usuarios'
 import { rutasTanques } from './rutas/tanques'
 import type { DependenciasTanques } from './rutas/tanques'
 import { rutasPartidas } from './rutas/partidas'
@@ -14,7 +16,7 @@ const errores: ErrorRequestHandler = (error, _req, res, _next) => {
   res.status(500).json({ error: 'Error interno' })
 }
 
-type Dependencias = DependenciasAutenticacion & DependenciasTanques & DependenciasPartidas
+type Dependencias = DependenciasAutenticacion & DependenciasUsuarios & DependenciasTanques & DependenciasPartidas
 
 export function crearServidor(deps: Dependencias): Express {
   const api = Router()
@@ -22,6 +24,7 @@ export function crearServidor(deps: Dependencias): Express {
   api.get('/openapi.json', (_req, res) => void res.json(openapi))
   api.use('/docs', swaggerUi.serve, swaggerUi.setup(openapi, { customSiteTitle: 'TankGame · API' }))
   api.use('/auth', rutasAutenticacion(deps))
+  api.use('/usuarios', rutasUsuarios(deps))
   api.use('/tanques', rutasTanques(deps))
   api.use('/partidas', rutasPartidas(deps))
 

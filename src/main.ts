@@ -2,6 +2,7 @@
 // de implementaciones concretas.
 import { RegistrarUsuario } from './aplicacion/casos-uso/RegistrarUsuario'
 import { IniciarSesion } from './aplicacion/casos-uso/IniciarSesion'
+import { CambiarEstadoUsuario } from './aplicacion/casos-uso/CambiarEstadoUsuario'
 import { CrearTanque } from './aplicacion/casos-uso/CrearTanque'
 import { ListarTanquesDeJugador } from './aplicacion/casos-uso/ListarTanquesDeJugador'
 import { RegistrarPartida } from './aplicacion/casos-uso/RegistrarPartida'
@@ -28,6 +29,7 @@ const app = crearServidor({
   tokens,
   registrarUsuario: new RegistrarUsuario(usuarios, claves),
   iniciarSesion: new IniciarSesion(usuarios, claves, tokens),
+  cambiarEstadoUsuario: new CambiarEstadoUsuario(usuarios),
   crearTanque: new CrearTanque(tanques, usuarios),
   listarTanquesDeJugador: new ListarTanquesDeJugador(tanques),
   registrarPartida: new RegistrarPartida(partidas, usuarios),

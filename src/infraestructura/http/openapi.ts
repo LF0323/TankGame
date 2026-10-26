@@ -99,6 +99,7 @@ export const openapi = {
   tags: [
     { name: 'Salud', description: 'Verificación de que el servicio responde.' },
     { name: 'Autenticación', description: 'Registro de usuarios, inicio de sesión y consulta del perfil propio.' },
+    { name: 'Usuarios', description: 'Gestión de cuentas de usuario (desactivación lógica).' },
     { name: 'Tanques', description: 'Tanques que posee cada jugador.' },
     { name: 'Partidas', description: 'Registro de partidas e historial (Incluye reglas multijugador ACT-008).' },
   ],
@@ -223,6 +224,58 @@ export const openapi = {
           },
           401: respuestaError('Token ausente, mal formado, expirado o con firma inválida.', 'Sesión requerida'),
           404: respuestaError('El token es válido pero el usuario ya no existe.', 'Usuario no encontrado'),
+        },
+      },
+    },
+
+    '/usuarios/{usuarioId}/estado': {
+      patch: {
+        tags: ['Usuarios'],
+        summary: 'Activar o desactivar una cuenta (desactivación lógica)',
+        description: [
+          'Cambia el campo `activo` de un usuario. **No borra la fila**: se conservan sus tanques y partidas.',
+          'Una cuenta desactivada no puede iniciar sesión (`POST /auth/login` responde 401).',
+          '',
+          'Reglas que aplica el caso de uso `CambiarEstadoUsuario`:',
+          '',
+          '- Requiere sesión (botón **Authorize**).',
+          '- Solo el propio usuario o un `ADMINISTRADOR` pueden cambiar el estado; cualquier otro recibe 403.',
+          '- Si el usuario no existe responde 404.',
+        ].join('\n'),
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'usuarioId',
+            in: 'path',
+            required: true,
+            schema: { type: 'string', format: 'uuid' },
+            description: 'Id del usuario cuya cuenta se activa o desactiva.',
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: { activo: { type: 'boolean', example: false, description: '`false` desactiva, `true` reactiva.' } },
+                required: ['activo'],
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Cuenta actualizada; devuelve el usuario con su nuevo estado.',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/UsuarioDTO' } } },
+          },
+          400: respuestaError('Falta `activo` o no es booleano.', 'activo requerido (true | false)'),
+          401: respuestaError('Token ausente, mal formado, expirado o con firma inválida.', 'Sesión requerida'),
+          403: respuestaError(
+            'El solicitante no es el dueño de la cuenta ni administrador.',
+            'Solo el propio usuario o un administrador pueden cambiar el estado de una cuenta',
+          ),
+          404: respuestaError('El usuario no existe.', 'No existe un usuario con id ...'),
         },
       },
     },

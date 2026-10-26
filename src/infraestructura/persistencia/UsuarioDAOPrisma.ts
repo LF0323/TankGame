@@ -28,4 +28,8 @@ export class UsuarioDAOPrisma implements UsuarioDAO {
     const fila = await this.prisma.usuario.findUnique({ where: { id } })
     return fila && aDominio(fila)
   }
+
+  async cambiarActivo(id: string, activo: boolean): Promise<Usuario> {
+    return aDominio(await this.prisma.usuario.update({ where: { id }, data: { activo } }))
+  }
 }
