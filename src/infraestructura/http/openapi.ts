@@ -172,7 +172,7 @@ export const openapi = {
                     type: 'string',
                     enum: ROLES,
                     default: 'SOLICITANTE',
-                    example: 'AGENTE',
+                    example: 'SOLICITANTE',
                   },
                 },
                 required: ['nombre', 'correo', 'clave'],
