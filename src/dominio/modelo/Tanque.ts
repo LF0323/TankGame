@@ -2,6 +2,13 @@ export const TIPOS_TANQUE = ['LIGERO', 'MEDIO', 'PESADO'] as const
 
 export type TipoTanque = (typeof TIPOS_TANQUE)[number]
 
+/** Estadísticas con las que nace cada tipo de tanque. `vida` es también su vida máxima. */
+export const ESTADISTICAS_BASE: Record<TipoTanque, { vida: number; dano: number; velocidad: number }> = {
+  LIGERO: { vida: 70, dano: 8, velocidad: 9 },
+  MEDIO: { vida: 100, dano: 12, velocidad: 6 },
+  PESADO: { vida: 150, dano: 18, velocidad: 3 },
+}
+
 export interface Tanque {
   id: string
   nombre: string

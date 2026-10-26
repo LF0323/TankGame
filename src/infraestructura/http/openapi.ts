@@ -17,6 +17,18 @@ const usuario = {
   required: ['id', 'nombre', 'correo', 'rol', 'activo'],
 }
 
+const usuarioPublico = {
+  type: 'object',
+  description: 'Datos de un usuario visibles para cualquier jugador con sesión (`UsuarioPublicoDTO`): sin correo ni clave.',
+  properties: {
+    id: { type: 'string', format: 'uuid', example: 'cd9c06cf-b57f-4e22-bc47-589a074e8c2c' },
+    nombre: { type: 'string', example: 'Ana Agente' },
+    rol: { type: 'string', enum: ROLES, example: 'AGENTE' },
+    activo: { type: 'boolean', example: true },
+  },
+  required: ['id', 'nombre', 'rol', 'activo'],
+}
+
 const sesion = {
   type: 'object',
   description: 'Resultado de un inicio de sesión: el token y el usuario dueño de la sesión.',
@@ -67,17 +79,31 @@ const respuestaError = (description: string, ejemplo: string) => ({
   content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorDTO' }, example: { error: ejemplo } } },
 })
 
+/** Todas las rutas cuelgan de `/api`: el prefijo se agrega aquí, en un solo punto, para que Swagger lo muestre completo. */
+const PREFIJO_API = '/api'
+const conPrefijoApi = (rutas: object) =>
+  Object.fromEntries(Object.entries(rutas).map(([ruta, definicion]) => [PREFIJO_API + ruta, definicion]))
+
 export const openapi = {
   openapi: '3.0.3',
   info: {
     title: 'TankGame · API',
     version: '1.0.0',
     description: [
-      'API del backend del proyecto TankGame.',
+      'API del backend del proyecto TankGame (Migración Java → Node.js).',
       '',
-      'Cubre la **autenticación y el registro de usuarios** (base heredada de la plantilla del curso) y',
-      'las entidades propias del proyecto: **Tanque** (el vehículo de un jugador) y **Partida** (el',
-      'registro de una partida jugada). Ambas dependen de un usuario existente.',
+      '### Funciones existentes conservadas:',
+      '- **Monitoreo y Salud del Servicio**: Endpoint de comprobación de estado (`GET /api/salud`).',
+      '- **Gestión de Usuarios y Autenticación**: Registro de jugadores (`POST /api/auth/registro`), inicio de sesión con JWT (`POST /api/auth/login`) y consulta de perfil (`GET /api/auth/perfil`).',
+      '- **Gestión de Tanques**: Creación y asignación de atributos según tipo de vehículo (`POST /api/tanques`) y consulta por propietario (`GET /api/tanques`).',
+      '- **Registro de Partidas**: Persistencia de victorias/derrotas/empates, puntajes y duración (`POST /api/partidas`) e historial del jugador (`GET /api/partidas`).',
+      '',
+      '### Requisitos Funcionales - Partida Multijugador (ACT-008):',
+      '- **RF-M01 (Creación de Sala Multijugador):** Un usuario autenticado puede crear una sala de partida en espera, asignándole un código o identificador único.',
+      '- **RF-M02 (Unirse a una Partida):** Cualquier jugador autenticado puede unirse a una sala en espera mediante su identificador mientras la sala no haya iniciado.',
+      '- **RF-M03 (Capacidad de Jugadores):** Una sala multijugador requiere un **mínimo de 2 jugadores** para iniciar la partida y permite un **máximo de 4 jugadores** por sala.',
+      '- **RF-M04 (Validación de Cupo):** Si la sala alcanza los 4 jugadores, no se permitirán nuevos ingresos (retornando un error de capacidad llena). Si hay menos de 2 jugadores al intentar iniciar, se bloquea el inicio.',
+      '- **RF-M05 (Asignación de Tanques):** Cada jugador que se une a la partida multijugador debe seleccionar o tener asignado un tanque previamente registrado.',
       '',
       '**Cómo probar desde aquí**: registra un usuario en `POST /api/auth/registro`, copia el `id` de la',
       'respuesta, y úsalo como `propietarioId` / `jugadorId` en los endpoints de Tanques y Partidas.',
@@ -86,16 +112,16 @@ export const openapi = {
     ].join('\n'),
     license: { name: 'MIT' },
   },
-  servers: [{ url: '/api', description: 'Servidor actual' }],
-  // Por defecto las rutas son públicas; solo las que declaran `security` exigen token.
+  servers: [{ url: '/', description: 'Servidor actual' }],
   security: [],
   tags: [
     { name: 'Salud', description: 'Verificación de que el servicio responde.' },
     { name: 'Autenticación', description: 'Registro de usuarios, inicio de sesión y consulta del perfil propio.' },
+    { name: 'Usuarios', description: 'Gestión de cuentas de usuario (desactivación lógica).' },
     { name: 'Tanques', description: 'Tanques que posee cada jugador.' },
-    { name: 'Partidas', description: 'Registro de partidas jugadas.' },
+    { name: 'Partidas', description: 'Registro de partidas e historial (Incluye reglas multijugador ACT-008).' },
   ],
-  paths: {
+  paths: conPrefijoApi({
     '/salud': {
       get: {
         tags: ['Salud'],
@@ -147,7 +173,7 @@ export const openapi = {
                     type: 'string',
                     enum: ROLES,
                     default: 'SOLICITANTE',
-                    example: 'AGENTE',
+                    example: 'SOLICITANTE',
                   },
                 },
                 required: ['nombre', 'correo', 'clave'],
@@ -232,6 +258,20 @@ export const openapi = {
             required: true,
             schema: { type: 'string', format: 'uuid' },
             description: 'Id del tanque a consultar.',
+    '/usuarios/{usuarioId}': {
+      get: {
+        tags: ['Usuarios'],
+        summary: 'Consultar un usuario por su id',
+        description:
+          'Devuelve los datos públicos del usuario (id, nombre, rol y si está activo), sin correo ni clave. Requiere sesión.',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'usuarioId',
+            in: 'path',
+            required: true,
+            schema: { type: 'string', format: 'uuid' },
+            description: 'Id del usuario que se quiere consultar.',
           },
         ],
         responses: {
@@ -262,6 +302,67 @@ export const openapi = {
       },
     },
     
+            description: 'Datos públicos del usuario.',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/UsuarioPublicoDTO' } } },
+          },
+          401: respuestaError('Token ausente, mal formado, expirado o con firma inválida.', 'Sesión requerida'),
+          404: respuestaError('El usuario no existe.', 'No existe un usuario con id ...'),
+        },
+      },
+    },
+
+    '/usuarios/{usuarioId}/estado': {
+      patch: {
+        tags: ['Usuarios'],
+        summary: 'Activar o desactivar una cuenta (desactivación lógica)',
+        description: [
+          'Cambia el campo `activo` de un usuario. **No borra la fila**: se conservan sus tanques y partidas.',
+          'Una cuenta desactivada no puede iniciar sesión (`POST /auth/login` responde 401).',
+          '',
+          'Reglas que aplica el caso de uso `CambiarEstadoUsuario`:',
+          '',
+          '- Requiere sesión (botón **Authorize**).',
+          '- Solo el propio usuario o un `ADMINISTRADOR` pueden cambiar el estado; cualquier otro recibe 403.',
+          '- Si el usuario no existe responde 404.',
+        ].join('\n'),
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'usuarioId',
+            in: 'path',
+            required: true,
+            schema: { type: 'string', format: 'uuid' },
+            description: 'Id del usuario cuya cuenta se activa o desactiva.',
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: { activo: { type: 'boolean', example: false, description: '`false` desactiva, `true` reactiva.' } },
+                required: ['activo'],
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Cuenta actualizada; devuelve el usuario con su nuevo estado.',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/UsuarioDTO' } } },
+          },
+          400: respuestaError('Falta `activo` o no es booleano.', 'activo requerido (true | false)'),
+          401: respuestaError('Token ausente, mal formado, expirado o con firma inválida.', 'Sesión requerida'),
+          403: respuestaError(
+            'El solicitante no es el dueño de la cuenta ni administrador.',
+            'Solo el propio usuario o un administrador pueden cambiar el estado de una cuenta',
+          ),
+          404: respuestaError('El usuario no existe.', 'No existe un usuario con id ...'),
+        },
+      },
+    },
+
     '/tanques': {
       post: {
         tags: ['Tanques'],
@@ -314,6 +415,55 @@ export const openapi = {
             content: { 'application/json': { schema: { type: 'array', items: { $ref: '#/components/schemas/TanqueDTO' } } } },
           },
           400: respuestaError('Falta el query param propietarioId.', 'propietarioId requerido como query param'),
+        },
+      },
+    },
+
+    '/tanques/{tanqueId}/recibir-dano': {
+      post: {
+        tags: ['Tanques'],
+        summary: 'Aplicar daño recibido a un tanque',
+        description:
+          'Resta `danoRecibido` a la vida del tanque con las reglas del juego: la vida no baja de 0 y un tanque con vida 0 queda eliminado (`vivo: false`). Requiere sesión. No confundir con el campo `dano` del tanque, que es el daño que él causa.',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'tanqueId',
+            in: 'path',
+            required: true,
+            schema: { type: 'string', format: 'uuid' },
+            description: 'Id del tanque que recibe el daño.',
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: { danoRecibido: { type: 'number', minimum: 0, example: 30, description: 'Puntos de vida a restar.' } },
+                required: ['danoRecibido'],
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Tanque con su vida actualizada y si sigue vivo.',
+            content: {
+              'application/json': {
+                schema: {
+                  allOf: [
+                    { $ref: '#/components/schemas/TanqueDTO' },
+                    { type: 'object', properties: { vivo: { type: 'boolean', example: true } }, required: ['vivo'] },
+                  ],
+                },
+              },
+            },
+          },
+          400: respuestaError('Falta `danoRecibido` o no es un número mayor o igual a 0.', 'danoRecibido inválido'),
+          401: respuestaError('Token ausente, mal formado, expirado o con firma inválida.', 'Sesión requerida'),
+          404: respuestaError('El tanque no existe.', 'No existe un tanque con id ...'),
         },
       },
     },
@@ -372,9 +522,9 @@ export const openapi = {
         },
       },
     },
-  },
+  }),
   components: {
-    schemas: { UsuarioDTO: usuario, SesionDTO: sesion, TanqueDTO: tanque, PartidaDTO: partida, ErrorDTO: error },
+    schemas: { UsuarioDTO: usuario, UsuarioPublicoDTO: usuarioPublico, SesionDTO: sesion, TanqueDTO: tanque, PartidaDTO: partida, ErrorDTO: error },
     securitySchemes: {
       bearerAuth: {
         type: 'http',

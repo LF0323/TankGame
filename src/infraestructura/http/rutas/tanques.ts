@@ -1,17 +1,22 @@
 import { Router } from 'express'
+import type { ServicioTokens } from '../../../dominio/puertos'
 import { aTanqueDTO, esTipoTanque } from '../../../dominio/modelo/Tanque'
 import { CrearTanque, PropietarioNoExiste } from '../../../aplicacion/casos-uso/CrearTanque'
 import type { CrearTanqueDTO } from '../../../aplicacion/casos-uso/CrearTanque'
+import { AplicarDanoTanque, TanqueNoEncontrado } from '../../../aplicacion/casos-uso/AplicarDanoTanque'
+import { numeroNoNegativo } from '../../../aplicacion/validaciones'
+import { exigirSesion } from './autenticacion'
 import { ListarTanquesDeJugador } from '../../../aplicacion/casos-uso/ListarTanquesDeJugador'
 import { ObtenerTanquePorId, TanqueNoEncontrado } from '../../../aplicacion/casos-uso/ObtenerTanquePorId'
 import { EliminarTanque } from '../../../aplicacion/casos-uso/EliminarTanque'
+import { textoMinimo, textoRequerido } from '../../../aplicacion/validaciones'
 
 function validarCreacion(cuerpo: unknown): CrearTanqueDTO | string {
   const d = (cuerpo ?? {}) as Record<string, unknown>
-  if (typeof d['nombre'] !== 'string' || d['nombre'].trim().length < 2) return 'nombre requerido (mínimo 2 caracteres)'
-  if (typeof d['propietarioId'] !== 'string') return 'propietarioId requerido'
+  const error = textoMinimo(d['nombre'], 'nombre', 2) ?? textoRequerido(d['propietarioId'], 'propietarioId')
+  if (error) return error
   if (!esTipoTanque(d['tipo'])) return 'tipo inválido (LIGERO | MEDIO | PESADO)'
-  return { nombre: d['nombre'], tipo: d['tipo'], propietarioId: d['propietarioId'] }
+  return { nombre: d['nombre'] as string, tipo: d['tipo'], propietarioId: d['propietarioId'] as string }
 }
 
 export interface DependenciasTanques {
@@ -19,6 +24,8 @@ export interface DependenciasTanques {
   listarTanquesDeJugador: ListarTanquesDeJugador
   obtenerTanquePorId: ObtenerTanquePorId
   eliminarTanque: EliminarTanque
+  aplicarDanoTanque: AplicarDanoTanque
+  tokens: ServicioTokens
 }
 
 export function rutasTanques(deps: DependenciasTanques): Router {
@@ -51,6 +58,15 @@ export function rutasTanques(deps: DependenciasTanques): Router {
     try {
       const tanque = await deps.obtenerTanquePorId.ejecutar(tanqueId)
       res.json(aTanqueDTO(tanque))
+  rutas.post('/:tanqueId/recibir-dano', exigirSesion(deps.tokens), async (req, res, next) => {
+    const tanqueId = req.params['tanqueId']
+    if (typeof tanqueId !== 'string') return void res.status(400).json({ error: 'tanqueId requerido' })
+    const cuerpo = (req.body ?? {}) as Record<string, unknown>
+    const error = numeroNoNegativo(cuerpo['danoRecibido'], 'danoRecibido')
+    if (error) return void res.status(400).json({ error })
+    try {
+      const { tanque, vivo } = await deps.aplicarDanoTanque.ejecutar(tanqueId, cuerpo['danoRecibido'] as number)
+      res.json({ ...aTanqueDTO(tanque), vivo })
     } catch (error) {
       if (error instanceof TanqueNoEncontrado) return void res.status(404).json({ error: error.message })
       next(error)

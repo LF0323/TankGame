@@ -17,6 +17,13 @@ export class UsuarioDAOEnMemoria implements UsuarioDAO {
   async porId(id: string): Promise<Usuario | null> {
     return this.filas.find((u) => u.id === id) ?? null
   }
+
+  async cambiarActivo(id: string, activo: boolean): Promise<Usuario> {
+    const fila = this.filas.find((u) => u.id === id)
+    if (!fila) throw new Error(`No existe el usuario ${id}`)
+    fila.activo = activo
+    return fila
+  }
 }
 
 /** Hash falso: las pruebas del dominio no necesitan bcrypt ni su costo. */

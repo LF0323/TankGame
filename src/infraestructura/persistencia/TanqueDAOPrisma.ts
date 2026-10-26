@@ -38,3 +38,7 @@ export class TanqueDAOPrisma implements TanqueDAO {
     })
   }
 }
+  async actualizarVida(id: string, vida: number): Promise<Tanque> {
+    return aDominio(await this.prisma.tanque.update({ where: { id }, data: { vida } }))
+  }
+}
