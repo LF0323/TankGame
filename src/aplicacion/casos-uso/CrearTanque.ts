@@ -1,3 +1,4 @@
+import { ESTADISTICAS_BASE } from '../../dominio/modelo/Tanque'
 import type { Tanque, TipoTanque } from '../../dominio/modelo/Tanque'
 import type { TanqueDAO, UsuarioDAO } from '../../dominio/puertos'
 
@@ -24,17 +25,11 @@ export class CrearTanque {
       throw new PropietarioNoExiste(datos.propietarioId)
     }
 
-    const valoresPorTipo: Record<TipoTanque, { vida: number; dano: number; velocidad: number }> = {
-      LIGERO: { vida: 70, dano: 8, velocidad: 9 },
-      MEDIO: { vida: 100, dano: 12, velocidad: 6 },
-      PESADO: { vida: 150, dano: 18, velocidad: 3 },
-    }
-
     return this.tanques.guardar({
       nombre: datos.nombre.trim(),
       tipo: datos.tipo,
       propietarioId: datos.propietarioId,
-      ...valoresPorTipo[datos.tipo],
+      ...ESTADISTICAS_BASE[datos.tipo],
     })
   }
 }

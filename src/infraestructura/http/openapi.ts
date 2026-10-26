@@ -380,6 +380,55 @@ export const openapi = {
       },
     },
 
+    '/tanques/{tanqueId}/recibir-dano': {
+      post: {
+        tags: ['Tanques'],
+        summary: 'Aplicar daño recibido a un tanque',
+        description:
+          'Resta `danoRecibido` a la vida del tanque con las reglas del juego: la vida no baja de 0 y un tanque con vida 0 queda eliminado (`vivo: false`). Requiere sesión. No confundir con el campo `dano` del tanque, que es el daño que él causa.',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'tanqueId',
+            in: 'path',
+            required: true,
+            schema: { type: 'string', format: 'uuid' },
+            description: 'Id del tanque que recibe el daño.',
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: { danoRecibido: { type: 'number', minimum: 0, example: 30, description: 'Puntos de vida a restar.' } },
+                required: ['danoRecibido'],
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Tanque con su vida actualizada y si sigue vivo.',
+            content: {
+              'application/json': {
+                schema: {
+                  allOf: [
+                    { $ref: '#/components/schemas/TanqueDTO' },
+                    { type: 'object', properties: { vivo: { type: 'boolean', example: true } }, required: ['vivo'] },
+                  ],
+                },
+              },
+            },
+          },
+          400: respuestaError('Falta `danoRecibido` o no es un número mayor o igual a 0.', 'danoRecibido inválido'),
+          401: respuestaError('Token ausente, mal formado, expirado o con firma inválida.', 'Sesión requerida'),
+          404: respuestaError('El tanque no existe.', 'No existe un tanque con id ...'),
+        },
+      },
+    },
+
     '/partidas': {
       post: {
         tags: ['Partidas'],

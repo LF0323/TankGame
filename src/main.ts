@@ -4,6 +4,7 @@ import { RegistrarUsuario } from './aplicacion/casos-uso/RegistrarUsuario'
 import { IniciarSesion } from './aplicacion/casos-uso/IniciarSesion'
 import { CambiarEstadoUsuario } from './aplicacion/casos-uso/CambiarEstadoUsuario'
 import { ConsultarUsuario } from './aplicacion/casos-uso/ConsultarUsuario'
+import { AplicarDanoTanque } from './aplicacion/casos-uso/AplicarDanoTanque'
 import { CrearTanque } from './aplicacion/casos-uso/CrearTanque'
 import { ListarTanquesDeJugador } from './aplicacion/casos-uso/ListarTanquesDeJugador'
 import { RegistrarPartida } from './aplicacion/casos-uso/RegistrarPartida'
@@ -32,6 +33,7 @@ const app = crearServidor({
   iniciarSesion: new IniciarSesion(usuarios, claves, tokens),
   cambiarEstadoUsuario: new CambiarEstadoUsuario(usuarios),
   consultarUsuario: new ConsultarUsuario(usuarios),
+  aplicarDanoTanque: new AplicarDanoTanque(tanques),
   crearTanque: new CrearTanque(tanques, usuarios),
   listarTanquesDeJugador: new ListarTanquesDeJugador(tanques),
   registrarPartida: new RegistrarPartida(partidas, usuarios),
