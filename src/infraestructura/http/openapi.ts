@@ -50,8 +50,9 @@ const tanque = {
     dano: { type: 'integer', example: 12 },
     velocidad: { type: 'integer', example: 6 },
     propietarioId: { type: 'string', format: 'uuid', description: 'Id del usuario dueño del tanque.' },
+    activo: { type: 'boolean', example: true },
   },
-  required: ['id', 'nombre', 'tipo', 'vida', 'dano', 'velocidad', 'propietarioId'],
+  required: ['id', 'nombre', 'tipo', 'vida', 'dano', 'velocidad', 'propietarioId', 'activo'],
 }
 
 const partida = {
@@ -278,7 +279,25 @@ export const openapi = {
             description: 'Detalles del tanque.',
             content: { 'application/json': { schema: { $ref: '#/components/schemas/TanqueDTO' } } },
           },
-          404: respuestaError('No existe ningún tanque con el id especificado.', 'No existe un tanque con id ...'),
+          404: respuestaError('No existe ningún tanque activo con el id especificado.', 'No existe un tanque con id ...'),
+        },
+      },
+      delete: {
+        tags: ['Tanques'],
+        summary: 'Eliminar un tanque lógicamente',
+        description: 'Desactiva un tanque (`activo: false`) para que deje de estar disponible en las consultas y listados.',
+        parameters: [
+          {
+            name: 'tanqueId',
+            in: 'path',
+            required: true,
+            schema: { type: 'string', format: 'uuid' },
+            description: 'Id del tanque a eliminar.',
+          },
+        ],
+        responses: {
+          204: { description: 'Tanque desactivado con éxito.' },
+          404: respuestaError('No existe ningún tanque activo con el id especificado.', 'No existe un tanque con id ...'),
         },
       },
     },

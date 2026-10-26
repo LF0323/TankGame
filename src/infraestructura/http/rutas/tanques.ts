@@ -8,6 +8,7 @@ import { numeroNoNegativo } from '../../../aplicacion/validaciones'
 import { exigirSesion } from './autenticacion'
 import { ListarTanquesDeJugador } from '../../../aplicacion/casos-uso/ListarTanquesDeJugador'
 import { ObtenerTanquePorId, TanqueNoEncontrado } from '../../../aplicacion/casos-uso/ObtenerTanquePorId'
+import { EliminarTanque } from '../../../aplicacion/casos-uso/EliminarTanque'
 import { textoMinimo, textoRequerido } from '../../../aplicacion/validaciones'
 
 function validarCreacion(cuerpo: unknown): CrearTanqueDTO | string {
@@ -22,6 +23,7 @@ export interface DependenciasTanques {
   crearTanque: CrearTanque
   listarTanquesDeJugador: ListarTanquesDeJugador
   obtenerTanquePorId: ObtenerTanquePorId
+  eliminarTanque: EliminarTanque
   aplicarDanoTanque: AplicarDanoTanque
   tokens: ServicioTokens
 }
@@ -65,6 +67,17 @@ export function rutasTanques(deps: DependenciasTanques): Router {
     try {
       const { tanque, vivo } = await deps.aplicarDanoTanque.ejecutar(tanqueId, cuerpo['danoRecibido'] as number)
       res.json({ ...aTanqueDTO(tanque), vivo })
+    } catch (error) {
+      if (error instanceof TanqueNoEncontrado) return void res.status(404).json({ error: error.message })
+      next(error)
+    }
+  })
+
+  rutas.delete('/:tanqueId', async (req, res, next) => {
+    const { tanqueId } = req.params
+    try {
+      await deps.eliminarTanque.ejecutar(tanqueId)
+      res.status(204).send()
     } catch (error) {
       if (error instanceof TanqueNoEncontrado) return void res.status(404).json({ error: error.message })
       next(error)

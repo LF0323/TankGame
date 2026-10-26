@@ -11,6 +11,7 @@ const aDominio = (fila: FilaTanque): Tanque => ({
   dano: fila.dano,
   velocidad: fila.velocidad,
   propietarioId: fila.propietarioId,
+  activo: fila.activo,
 })
 
 export class TanqueDAOPrisma implements TanqueDAO {
@@ -22,14 +23,21 @@ export class TanqueDAOPrisma implements TanqueDAO {
 
   async porId(id: string): Promise<Tanque | null> {
     const fila = await this.prisma.tanque.findUnique({ where: { id } })
-    return fila && aDominio(fila)
+    return fila && fila.activo ? aDominio(fila) : null
   }
 
   async listarPorPropietario(propietarioId: string): Promise<Tanque[]> {
-    const filas = await this.prisma.tanque.findMany({ where: { propietarioId } })
+    const filas = await this.prisma.tanque.findMany({ where: { propietarioId, activo: true } })
     return filas.map(aDominio)
   }
 
+  async desactivar(id: string): Promise<void> {
+    await this.prisma.tanque.update({
+      where: { id },
+      data: { activo: false },
+    })
+  }
+}
   async actualizarVida(id: string, vida: number): Promise<Tanque> {
     return aDominio(await this.prisma.tanque.update({ where: { id }, data: { vida } }))
   }
