@@ -10,9 +10,10 @@ export interface Tanque {
   dano: number
   velocidad: number
   propietarioId: string
+  activo: boolean
 }
 
-export type TanqueNuevo = Omit<Tanque, 'id'>
+export type TanqueNuevo = Omit<Tanque, 'id' | 'activo'>
 
 export interface TanqueDTO {
   id: string
@@ -22,12 +23,13 @@ export interface TanqueDTO {
   dano: number
   velocidad: number
   propietarioId: string
+  activo: boolean
 }
 
 export function esTipoTanque(valor: unknown): valor is TipoTanque {
   return TIPOS_TANQUE.includes(valor as TipoTanque)
 }
 
-export function aTanqueDTO({ id, nombre, tipo, vida, dano, velocidad, propietarioId }: Tanque): TanqueDTO {
-  return { id, nombre, tipo, vida, dano, velocidad, propietarioId }
+export function aTanqueDTO({ id, nombre, tipo, vida, dano, velocidad, propietarioId, activo }: Tanque): TanqueDTO {
+  return { id, nombre, tipo, vida, dano, velocidad, propietarioId, activo }
 }

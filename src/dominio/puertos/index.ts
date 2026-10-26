@@ -29,6 +29,7 @@ export interface TanqueDAO {
   guardar(tanque: TanqueNuevo): Promise<Tanque>
   porId(id: string): Promise<Tanque | null>
   listarPorPropietario(propietarioId: string): Promise<Tanque[]>
+  desactivar(id: string): Promise<void>
 }
 
 export interface PartidaDAO {
