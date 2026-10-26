@@ -3,13 +3,14 @@ import { aTanqueDTO, esTipoTanque } from '../../../dominio/modelo/Tanque'
 import { CrearTanque, PropietarioNoExiste } from '../../../aplicacion/casos-uso/CrearTanque'
 import type { CrearTanqueDTO } from '../../../aplicacion/casos-uso/CrearTanque'
 import { ListarTanquesDeJugador } from '../../../aplicacion/casos-uso/ListarTanquesDeJugador'
+import { textoMinimo, textoRequerido } from '../../../aplicacion/validaciones'
 
 function validarCreacion(cuerpo: unknown): CrearTanqueDTO | string {
   const d = (cuerpo ?? {}) as Record<string, unknown>
-  if (typeof d['nombre'] !== 'string' || d['nombre'].trim().length < 2) return 'nombre requerido (mínimo 2 caracteres)'
-  if (typeof d['propietarioId'] !== 'string') return 'propietarioId requerido'
+  const error = textoMinimo(d['nombre'], 'nombre', 2) ?? textoRequerido(d['propietarioId'], 'propietarioId')
+  if (error) return error
   if (!esTipoTanque(d['tipo'])) return 'tipo inválido (LIGERO | MEDIO | PESADO)'
-  return { nombre: d['nombre'], tipo: d['tipo'], propietarioId: d['propietarioId'] }
+  return { nombre: d['nombre'] as string, tipo: d['tipo'], propietarioId: d['propietarioId'] as string }
 }
 
 export interface DependenciasTanques {

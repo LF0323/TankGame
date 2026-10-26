@@ -3,14 +3,22 @@ import { aPartidaDTO, esResultadoPartida } from '../../../dominio/modelo/Partida
 import { JugadorNoExiste, RegistrarPartida } from '../../../aplicacion/casos-uso/RegistrarPartida'
 import type { RegistrarPartidaDTO } from '../../../aplicacion/casos-uso/RegistrarPartida'
 import { ListarPartidasDeJugador } from '../../../aplicacion/casos-uso/ListarPartidasDeJugador'
+import { numeroNoNegativo, numeroPositivo, textoRequerido } from '../../../aplicacion/validaciones'
 
 function validarRegistro(cuerpo: unknown): RegistrarPartidaDTO | string {
   const d = (cuerpo ?? {}) as Record<string, unknown>
   if (!esResultadoPartida(d['resultado'])) return 'resultado inválido (VICTORIA | DERROTA | EMPATE)'
-  if (typeof d['puntaje'] !== 'number' || d['puntaje'] < 0) return 'puntaje inválido'
-  if (typeof d['duracionSegundos'] !== 'number' || d['duracionSegundos'] <= 0) return 'duracionSegundos inválido'
-  if (typeof d['jugadorId'] !== 'string') return 'jugadorId requerido'
-  return { resultado: d['resultado'], puntaje: d['puntaje'], duracionSegundos: d['duracionSegundos'], jugadorId: d['jugadorId'] }
+  const error =
+    numeroNoNegativo(d['puntaje'], 'puntaje') ??
+    numeroPositivo(d['duracionSegundos'], 'duracionSegundos') ??
+    textoRequerido(d['jugadorId'], 'jugadorId')
+  if (error) return error
+  return {
+    resultado: d['resultado'],
+    puntaje: d['puntaje'] as number,
+    duracionSegundos: d['duracionSegundos'] as number,
+    jugadorId: d['jugadorId'] as string,
+  }
 }
 
 export interface DependenciasPartidas {
