@@ -24,10 +24,22 @@ export interface UsuarioDTO {
   activo: boolean
 }
 
+/** Lo que cualquier usuario con sesión puede ver de otro: sin correo ni clave. */
+export interface UsuarioPublicoDTO {
+  id: string
+  nombre: string
+  rol: Rol
+  activo: boolean
+}
+
 export function esRol(valor: unknown): valor is Rol {
   return ROLES.includes(valor as Rol)
 }
 
 export function aUsuarioDTO({ id, nombre, correo, rol, activo }: Usuario): UsuarioDTO {
   return { id, nombre, correo, rol, activo }
+}
+
+export function aUsuarioPublicoDTO({ id, nombre, rol, activo }: Usuario): UsuarioPublicoDTO {
+  return { id, nombre, rol, activo }
 }

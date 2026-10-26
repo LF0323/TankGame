@@ -7,6 +7,7 @@ export interface UsuarioDAO {
   guardar(usuario: UsuarioNuevo): Promise<Usuario>
   porCorreo(correo: string): Promise<Usuario | null>
   porId(id: string): Promise<Usuario | null>
+  cambiarActivo(id: string, activo: boolean): Promise<Usuario>
 }
 
 export interface ServicioClaves {
@@ -29,6 +30,7 @@ export interface TanqueDAO {
   guardar(tanque: TanqueNuevo): Promise<Tanque>
   porId(id: string): Promise<Tanque | null>
   listarPorPropietario(propietarioId: string): Promise<Tanque[]>
+  actualizarVida(id: string, vida: number): Promise<Tanque>
 }
 
 export interface PartidaDAO {

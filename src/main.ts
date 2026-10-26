@@ -2,6 +2,9 @@
 // de implementaciones concretas.
 import { RegistrarUsuario } from './aplicacion/casos-uso/RegistrarUsuario'
 import { IniciarSesion } from './aplicacion/casos-uso/IniciarSesion'
+import { CambiarEstadoUsuario } from './aplicacion/casos-uso/CambiarEstadoUsuario'
+import { ConsultarUsuario } from './aplicacion/casos-uso/ConsultarUsuario'
+import { AplicarDanoTanque } from './aplicacion/casos-uso/AplicarDanoTanque'
 import { CrearTanque } from './aplicacion/casos-uso/CrearTanque'
 import { ListarTanquesDeJugador } from './aplicacion/casos-uso/ListarTanquesDeJugador'
 import { ObtenerTanquePorId } from './aplicacion/casos-uso/ObtenerTanquePorId' 
@@ -29,6 +32,9 @@ const app = crearServidor({
   tokens,
   registrarUsuario: new RegistrarUsuario(usuarios, claves),
   iniciarSesion: new IniciarSesion(usuarios, claves, tokens),
+  cambiarEstadoUsuario: new CambiarEstadoUsuario(usuarios),
+  consultarUsuario: new ConsultarUsuario(usuarios),
+  aplicarDanoTanque: new AplicarDanoTanque(tanques),
   crearTanque: new CrearTanque(tanques, usuarios),
   listarTanquesDeJugador: new ListarTanquesDeJugador(tanques),
   obtenerTanquePorId: new ObtenerTanquePorId(tanques), 

@@ -29,4 +29,8 @@ export class TanqueDAOPrisma implements TanqueDAO {
     const filas = await this.prisma.tanque.findMany({ where: { propietarioId } })
     return filas.map(aDominio)
   }
+
+  async actualizarVida(id: string, vida: number): Promise<Tanque> {
+    return aDominio(await this.prisma.tanque.update({ where: { id }, data: { vida } }))
+  }
 }
