@@ -30,6 +30,7 @@ export interface TanqueDAO {
   guardar(tanque: TanqueNuevo): Promise<Tanque>
   porId(id: string): Promise<Tanque | null>
   listarPorPropietario(propietarioId: string): Promise<Tanque[]>
+  actualizarVida(id: string, vida: number): Promise<Tanque>
 }
 
 export interface PartidaDAO {
