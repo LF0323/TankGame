@@ -7,6 +7,7 @@ import { AplicarDanoTanque, TanqueNoEncontrado } from '../../../aplicacion/casos
 import { numeroNoNegativo } from '../../../aplicacion/validaciones'
 import { exigirSesion } from './autenticacion'
 import { ListarTanquesDeJugador } from '../../../aplicacion/casos-uso/ListarTanquesDeJugador'
+import { ObtenerTanquePorId, TanqueNoEncontrado } from '../../../aplicacion/casos-uso/ObtenerTanquePorId'
 import { textoMinimo, textoRequerido } from '../../../aplicacion/validaciones'
 
 function validarCreacion(cuerpo: unknown): CrearTanqueDTO | string {
@@ -20,6 +21,7 @@ function validarCreacion(cuerpo: unknown): CrearTanqueDTO | string {
 export interface DependenciasTanques {
   crearTanque: CrearTanque
   listarTanquesDeJugador: ListarTanquesDeJugador
+  obtenerTanquePorId: ObtenerTanquePorId
   aplicarDanoTanque: AplicarDanoTanque
   tokens: ServicioTokens
 }
@@ -49,6 +51,11 @@ export function rutasTanques(deps: DependenciasTanques): Router {
     }
   })
 
+  rutas.get('/:tanqueId', async (req, res, next) => {
+    const { tanqueId } = req.params
+    try {
+      const tanque = await deps.obtenerTanquePorId.ejecutar(tanqueId)
+      res.json(aTanqueDTO(tanque))
   rutas.post('/:tanqueId/recibir-dano', exigirSesion(deps.tokens), async (req, res, next) => {
     const tanqueId = req.params['tanqueId']
     if (typeof tanqueId !== 'string') return void res.status(400).json({ error: 'tanqueId requerido' })

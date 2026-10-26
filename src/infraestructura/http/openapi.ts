@@ -245,6 +245,18 @@ export const openapi = {
       },
     },
 
+    '/tanques/{tanqueId}': {
+      get: {
+        tags: ['Tanques'],
+        summary: 'Consultar un tanque por su ID',
+        description: 'Obtiene la información detallada de un tanque específico a partir de su `tanqueId`.',
+        parameters: [
+          {
+            name: 'tanqueId',
+            in: 'path',
+            required: true,
+            schema: { type: 'string', format: 'uuid' },
+            description: 'Id del tanque a consultar.',
     '/usuarios/{usuarioId}': {
       get: {
         tags: ['Usuarios'],
@@ -263,6 +275,14 @@ export const openapi = {
         ],
         responses: {
           200: {
+            description: 'Detalles del tanque.',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/TanqueDTO' } } },
+          },
+          404: respuestaError('No existe ningún tanque con el id especificado.', 'No existe un tanque con id ...'),
+        },
+      },
+    },
+    
             description: 'Datos públicos del usuario.',
             content: { 'application/json': { schema: { $ref: '#/components/schemas/UsuarioPublicoDTO' } } },
           },
