@@ -32,6 +32,7 @@ export interface TanqueDAO {
   listarPorPropietario(propietarioId: string): Promise<Tanque[]>
   desactivar(id: string): Promise<void>
   actualizarVida(id: string, vida: number): Promise<Tanque>
+  actualizarNombre(id: string, nombre: string): Promise<Tanque>
 }
 
 export interface PartidaDAO {

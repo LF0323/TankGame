@@ -31,14 +31,27 @@ export class TanqueDAOPrisma implements TanqueDAO {
     return filas.map(aDominio)
   }
 
-  async desactivar(id: string): Promise<void> {
+    async desactivar(id: string): Promise<void> {
     await this.prisma.tanque.update({
       where: { id },
       data: { activo: false },
     })
   }
-}
+
   async actualizarVida(id: string, vida: number): Promise<Tanque> {
-    return aDominio(await this.prisma.tanque.update({ where: { id }, data: { vida } }))
+    return aDominio(
+      await this.prisma.tanque.update({
+        where: { id },
+        data: { vida },
+      }),
+    )
+  }
+
+  async actualizarNombre(id: string, nombre: string): Promise<Tanque> {
+    const fila = await this.prisma.tanque.update({
+      where: { id },
+      data: { nombre },
+    })
+    return aDominio(fila)
   }
 }

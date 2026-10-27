@@ -16,6 +16,7 @@ import { PartidaDAOPrisma } from './infraestructura/persistencia/PartidaDAOPrism
 import { ClavesBcrypt } from './infraestructura/seguridad/ClavesBcrypt'
 import { TokensJwt } from './infraestructura/seguridad/TokensJwt'
 import { crearServidor } from './infraestructura/http/servidor'
+import { RenombrarTanquePropio } from './aplicacion/casos-uso/RenombrarTanquePropio'
 
 const secreto = process.env['JWT_SECRET']
 if (!secreto) throw new Error('Falta JWT_SECRET (copia .env.example a .env)')
@@ -40,6 +41,7 @@ const app = crearServidor({
   eliminarTanque: new EliminarTanque(tanques), 
   registrarPartida: new RegistrarPartida(partidas, usuarios),
   listarPartidasDeJugador: new ListarPartidasDeJugador(partidas),
+  renombrarTanquePropio: new RenombrarTanquePropio(tanques),
 })
 
 const puerto = Number(process.env['PORT'] ?? 3000)
