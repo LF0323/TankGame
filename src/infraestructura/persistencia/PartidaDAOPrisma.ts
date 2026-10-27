@@ -18,6 +18,14 @@ export class PartidaDAOPrisma implements PartidaDAO {
     return aDominio(await this.prisma.partida.create({ data: partida }))
   }
 
+  async porId(id: string): Promise<Partida | null> {
+    const fila = await this.prisma.partida.findUnique({
+      where: { id },
+    })
+
+    return fila ? aDominio(fila) : null
+  }
+
   async listarPorJugador(jugadorId: string): Promise<Partida[]> {
     const filas = await this.prisma.partida.findMany({
       where: { jugadorId },

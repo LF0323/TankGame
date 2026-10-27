@@ -17,6 +17,7 @@ import { ClavesBcrypt } from './infraestructura/seguridad/ClavesBcrypt'
 import { TokensJwt } from './infraestructura/seguridad/TokensJwt'
 import { crearServidor } from './infraestructura/http/servidor'
 import { RenombrarTanquePropio } from './aplicacion/casos-uso/RenombrarTanquePropio'
+import { ObtenerPartidaPorId } from './aplicacion/casos-uso/ObtenerPartidaPorId'
 
 const secreto = process.env['JWT_SECRET']
 if (!secreto) throw new Error('Falta JWT_SECRET (copia .env.example a .env)')
@@ -41,6 +42,7 @@ const app = crearServidor({
   eliminarTanque: new EliminarTanque(tanques), 
   registrarPartida: new RegistrarPartida(partidas, usuarios),
   listarPartidasDeJugador: new ListarPartidasDeJugador(partidas),
+  obtenerPartidaPorId: new ObtenerPartidaPorId(partidas),
   renombrarTanquePropio: new RenombrarTanquePropio(tanques),
 })
 

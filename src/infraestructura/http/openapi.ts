@@ -827,6 +827,38 @@ export const openapi = {
         },
       },
 
+      '/partidas/{partidaId}': {
+        get: {
+          tags: ['Partidas'],
+          summary: 'Consultar una partida por ID',
+          description:
+              'Devuelve los datos de una partida a partir de su identificador.',
+          parameters: [
+            {
+              name: 'partidaId',
+              in: 'path',
+              required: true,
+              description: 'Identificador de la partida que se desea consultar.',
+              schema: { type: 'string', format: 'uuid' },
+            },
+          ],
+          responses: {
+            200: {
+              description: 'Partida encontrada.',
+              content: {
+                'application/json': {
+                  schema: { $ref: '#/components/schemas/PartidaDTO' },
+                },
+              },
+            },
+            404: respuestaError(
+                'La partida solicitada no existe.',
+                'No existe una partida con id ...',
+            ),
+          },
+        },
+      },
+
       get: {
         tags: ['Partidas'],
         summary: 'Listar las partidas de un jugador',
