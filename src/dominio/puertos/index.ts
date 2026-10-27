@@ -37,5 +37,6 @@ export interface TanqueDAO {
 
 export interface PartidaDAO {
   guardar(partida: PartidaNueva): Promise<Partida>
+  porId(id: string): Promise<Partida | null>
   listarPorJugador(jugadorId: string): Promise<Partida[]>
 }

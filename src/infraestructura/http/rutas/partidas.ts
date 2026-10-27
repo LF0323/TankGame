@@ -4,6 +4,7 @@ import { JugadorNoExiste, RegistrarPartida } from '../../../aplicacion/casos-uso
 import type { RegistrarPartidaDTO } from '../../../aplicacion/casos-uso/RegistrarPartida'
 import { ListarPartidasDeJugador } from '../../../aplicacion/casos-uso/ListarPartidasDeJugador'
 import { numeroNoNegativo, numeroPositivo, textoRequerido } from '../../../aplicacion/validaciones'
+import {ObtenerPartidaPorId, PartidaNoEncontrada} from '../../../aplicacion/casos-uso/ObtenerPartidaPorId'
 
 function validarRegistro(cuerpo: unknown): RegistrarPartidaDTO | string {
   const d = (cuerpo ?? {}) as Record<string, unknown>
@@ -24,6 +25,7 @@ function validarRegistro(cuerpo: unknown): RegistrarPartidaDTO | string {
 export interface DependenciasPartidas {
   registrarPartida: RegistrarPartida
   listarPartidasDeJugador: ListarPartidasDeJugador
+  obtenerPartidaPorId: ObtenerPartidaPorId
 }
 
 export function rutasPartidas(deps: DependenciasPartidas): Router {
@@ -47,6 +49,26 @@ export function rutasPartidas(deps: DependenciasPartidas): Router {
       const partidas = await deps.listarPartidasDeJugador.ejecutar(jugadorId)
       res.json(partidas.map(aPartidaDTO))
     } catch (error) {
+      next(error)
+    }
+  })
+
+  // Consultar una partida por su identificador.
+  rutas.get('/:partidaId', async (req, res, next) => {
+    const partidaId = req.params['partidaId']
+
+    if (typeof partidaId !== 'string') {
+      return void res.status(400).json({ error: 'partidaId requerido' })
+    }
+
+    try {
+      const partida = await deps.obtenerPartidaPorId.ejecutar(partidaId)
+      res.json(aPartidaDTO(partida))
+    } catch (error) {
+      if (error instanceof PartidaNoEncontrada) {
+        return void res.status(404).json({ error: error.message })
+      }
+
       next(error)
     }
   })
